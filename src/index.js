@@ -8,13 +8,12 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { Provider } from 'react-redux'
-import orderSlice from './orderSlice'
 import { configureStore } from "@reduxjs/toolkit";
+import orderSlice from "./orderSlice";
 
-const st = configureStore({
+const store = configureStore({
   reducer: orderSlice
 });
-
 
 const router = createBrowserRouter([
   {
@@ -26,7 +25,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={st}>
+    <Provider store={store}>
       <RouterProvider router={router} />
     </Provider>
   </React.StrictMode>
