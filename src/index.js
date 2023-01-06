@@ -10,10 +10,13 @@ import {
 import { Provider } from 'react-redux'
 import { configureStore } from "@reduxjs/toolkit";
 import orderSlice from "./orderSlice";
+import store2 from './store'
 
 const store = configureStore({
   reducer: orderSlice
 });
+
+
 
 const router = createBrowserRouter([
   {
@@ -25,7 +28,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
+    <Provider store={store2}>
       <RouterProvider router={router} />
     </Provider>
   </React.StrictMode>
