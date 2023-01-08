@@ -10,11 +10,15 @@ import { save } from "./orderSlice";
 import { Layout, Menu } from 'antd';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 
+import { useNavigate } from "react-router-dom";
+
 const { Meta } = Card;
 const { Content, Sider } = Layout;
 
 
 function App({dishes}) {
+  const navigate = useNavigate();
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const [items, setItems] = useState([]);
@@ -32,7 +36,6 @@ function App({dishes}) {
   // const { dishes } = useSelector(state=>state)
 
   useEffect( () => {
-    console.log("UPDATED")
     fetch("http://localhost:8000/api/dishes/e46ba39f-6227-48d4-9380-f941727a643f")
       .then(res => res.json())
       .then(
@@ -58,15 +61,8 @@ function App({dishes}) {
       <>
       {contextHolder}
       <Layout>
-        <Layout>
-          <Sider
-            width={200}
-            style={{
-              background: "white",
-            }}
-          >
             <Menu
-              mode="inline"
+              mode="horizontal"
               defaultSelectedKeys={['1']}
               defaultOpenKeys={['sub1']}
               style={{
@@ -75,12 +71,7 @@ function App({dishes}) {
               }}
               items={items2}
             />
-          </Sider>
-          <Layout
-            style={{
-              padding: '0 24px 24px',
-            }}
-          >
+
             <Content
               style={{
                 padding: 24,
@@ -105,7 +96,7 @@ function App({dishes}) {
                             icon={<PlusOutlined />} 
                             size={10}
                             onClick={ () => {
-                              dispatch(addOne());
+                              dispatch(addOne(item));
                               success(item.name);
                             }}
                             />
@@ -119,7 +110,7 @@ function App({dishes}) {
                   icon={<ShoppingCartOutlined />}
                   description={state.total_dishes}
                   type="primary"
-                  onClick={() => console.log("OK")}
+                  onClick={() => navigate("/summary")}
                   shape="square"
                 >
                 </FloatButton>
@@ -127,14 +118,11 @@ function App({dishes}) {
 
             </Content>
           </Layout>
-        </Layout>
-      </Layout>
       </>
     );
 }
 
 const mapStateToProps = (state) => {
-  console.log(state)
   return {
       dishes: state
   }
