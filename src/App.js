@@ -22,6 +22,7 @@ function App({dishes}) {
   const [messageApi, contextHolder] = message.useMessage();
 
   const [items, setItems] = useState([]);
+  const [menu, setMenu] = useState([]);
 
   const dispatch = useDispatch();
   const state = useSelector(state => state)
@@ -35,27 +36,38 @@ function App({dishes}) {
 
   // const { dishes } = useSelector(state=>state)
 
-  useEffect( () => {
-    fetch("http://localhost:8000/api/dishes/e46ba39f-6227-48d4-9380-f941727a643f")
+  // Retrieve the dishes associated to the category
+  const retrieveDishesByCategoryUuid = async (category_uuid) => {
+    await fetch(`http://localhost:8000/api/dishes/e46ba39f-6227-48d4-9380-f941727a643f/${category_uuid}`)
+    .then(res => res.json())
+    .then(
+      (result) => {
+        setItems(result)
+      },
+      (error) => {
+        console.log("ERROR")
+      }
+    )
+  };
+
+
+  useEffect(() => {
+    // Fetch the categories first.
+    fetch("http://localhost:8000/api/category/e46ba39f-6227-48d4-9380-f941727a643f")
       .then(res => res.json())
       .then(
         (result) => {
-          setItems(result)
+          setMenu(result)
+          if(result.length > 0){
+            retrieveDishesByCategoryUuid(result[0].key)
+          }
         },
         (error) => {
           console.log("ERROR")
         }
-      )
-  }, [dishes])
+    )
 
-  const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map((icon, index) => {
-    const key = String(index + 1);
-    return {
-      key: `sub${key}`,
-      icon: React.createElement(icon),
-      label: `subnav ${key}`
-    };
-  });
+  }, [dishes])
 
     return (
       <>
@@ -69,7 +81,8 @@ function App({dishes}) {
                 height: '100%',
                 borderRight: 0,
               }}
-              items={items2}
+              items={menu}
+              onClick={(data) => retrieveDishesByCategoryUuid(data.key)}
             />
 
             <Content

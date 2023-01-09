@@ -50,11 +50,6 @@ function Summary({dishes}) {
             key: 'tags',
         },
         {
-            title: 'Category',
-            dataIndex: 'category',
-            key: 'category',
-        },
-        {
             title: 'Quantity',
             dataIndex: 'qty',
             key: 'qty',
@@ -69,7 +64,7 @@ function Summary({dishes}) {
     };
 
     useEffect(() => {
-        console.log(Object.keys(state.dishes[0]))
+
     })
 
   // const { dishes } = useSelector(state=>state)
