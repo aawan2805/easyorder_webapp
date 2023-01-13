@@ -57,6 +57,7 @@ function App({dishes}) {
       .then(res => res.json())
       .then(
         (result) => {
+          console.log(result)
           setMenu(result)
           if(result.length > 0){
             retrieveDishesByCategoryUuid(result[0].key)
@@ -75,8 +76,6 @@ function App({dishes}) {
       <Layout>
             <Menu
               mode="horizontal"
-              defaultSelectedKeys={['1']}
-              defaultOpenKeys={['sub1']}
               style={{
                 height: '100%',
                 borderRight: 0,

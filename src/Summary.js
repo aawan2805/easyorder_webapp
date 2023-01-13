@@ -23,6 +23,7 @@ function Summary({dishes}) {
     const navigate = useNavigate();
 
     const [items, setItems] = useState([]);
+    const [orderPlacing, setOrderPlaced] = useState(false);
 
     const dispatch = useDispatch();
     const state = useSelector(state => state)
@@ -56,7 +57,7 @@ function Summary({dishes}) {
         },
     ]
 
-    const dishRemovedFromStore = (dishName) => {
+    const dishRemovedFromStore = (dishName, dishUuid) => {
         messageApi.open({
             type: 'success',
             content: `${dishName} eliminado de la cesta.`,
@@ -67,6 +68,36 @@ function Summary({dishes}) {
 
     })
 
+    const placeOrder = async () => {
+        // Let the button load.
+        setOrderPlaced(true);
+
+        let orders = [];
+        data.map((order) => {
+            orders.push({
+                dish_uuid: order.uuid,
+                quantity: order.qty,
+            })
+        })
+
+        await fetch("http://localhost:8000/api/order", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orders)
+        })
+        .then(res => res.json())
+        .then(
+          (result) => {
+            console.log(result)
+          },
+          (error) => {
+            console.log("ERROR")
+          }
+        )
+    }
+
   // const { dishes } = useSelector(state=>state)
     return (
         <>
@@ -75,11 +106,26 @@ function Summary({dishes}) {
             <div style={{
                 textAlign: "center"
             }}>
-                <Button type="primary">Realizar pedido</Button>
+                <Button 
+                 type="primary"
+                 disabled={data.length > 0 ? false : true}
+                 onClick={() => placeOrder()}
+                 loading={orderPlacing === true ? true : false}
+                >
+                    Realizar pedido
+                </Button>
             </div>
-            <FloatButton onClick={() => navigate("/")} icon={<ArrowLeftOutlined />} />
+            {orderPlacing === true ? 
+                null 
+                : 
+                <FloatButton onClick={() => navigate("/")}  icon={<ArrowLeftOutlined />} />
+            }
         </>
     );
+}
+
+const goBackFloatButton = () => {
+
 }
 
 const mapStateToProps = (state) => {
