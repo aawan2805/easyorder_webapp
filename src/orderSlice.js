@@ -7,7 +7,6 @@ const orderSlice = createSlice({
     reducers: {
         save: (state, param) => {
             const { item } = param.payload;
-            console.log(item)
             state.dishes.concat(item)
         },
     }

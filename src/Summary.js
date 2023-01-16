@@ -64,6 +64,14 @@ function Summary({dishes}) {
         });
     };
 
+    const OrderPlacedSuccess = (type, msg) => {
+        messageApi.open({
+            type: type,
+            content: msg,
+        });
+    };
+
+
     useEffect(() => {
 
     })
@@ -87,14 +95,18 @@ function Summary({dishes}) {
             },
             body: JSON.stringify(orders)
         })
-        .then(res => res.json())
+        .then(res => res)
         .then(
           (result) => {
-            console.log(result)
+            if(result.status === 201) {
+                OrderPlacedSuccess("success", result.statusText)
+                setOrderPlaced(false)
+                dispatch(reset())
+            } else {
+                OrderPlacedSuccess("error", "Error placing order. Try again.")
+                setOrderPlaced(false)
+            }
           },
-          (error) => {
-            console.log("ERROR")
-          }
         )
     }
 
@@ -136,7 +148,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        getDishes: () => { dispatch()}
+        getDishes: () => { dispatch() }
     }
 }
 
