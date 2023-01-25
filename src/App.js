@@ -12,6 +12,9 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/
 
 import { useNavigate } from "react-router-dom";
 
+import axios from 'axios';
+
+
 const { Meta } = Card;
 const { Content, Sider } = Layout;
 
@@ -38,14 +41,16 @@ function App({dishes}) {
 
   // Retrieve the dishes associated to the category
   const retrieveDishesByCategoryUuid = async (category_uuid) => {
-    await fetch(`http://localhost:8000/api/dishes/e46ba39f-6227-48d4-9380-f941727a643f/${category_uuid}`)
-    .then(res => res.json())
+    await axios.get(`http://localhost:8000/api/dishes/e46ba39f-6227-48d4-9380-f941727a643f/${category_uuid}`, {
+      withCredentials: true
+    })
+    .then(res => res.data)
     .then(
       (result) => {
         setItems(result)
       },
       (error) => {
-        console.log("ERROR")
+        console.log(error)
       }
     )
   };
@@ -53,18 +58,19 @@ function App({dishes}) {
 
   useEffect(() => {
     // Fetch the categories first.
-    fetch("http://localhost:8000/api/category/e46ba39f-6227-48d4-9380-f941727a643f")
-      .then(res => res.json())
+    axios.get("http://localhost:8000/api/category/e46ba39f-6227-48d4-9380-f941727a643f", {
+      withCredentials: true
+    })
+      .then(res => res.data)
       .then(
         (result) => {
-          console.log(result)
           setMenu(result)
           if(result.length > 0){
             retrieveDishesByCategoryUuid(result[0].key)
           }
         },
         (error) => {
-          console.log("ERROR")
+          console.log(error)
         }
     )
 
