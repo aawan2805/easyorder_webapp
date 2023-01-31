@@ -1,3 +1,4 @@
+import {getBrand} from './helper.js';
 import React, { useState, useEffect } from 'react';
 import { Col, Row, Card, Button, FloatButton, message } from 'antd';
 import { PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
@@ -11,6 +12,7 @@ import { Layout, Menu } from 'antd';
 import { LaptopOutlined, NotificationOutlined, UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Space, Table, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 
 const { Meta } = Card;
@@ -18,7 +20,7 @@ const { Content, Sider } = Layout;
 
 
 
-function Summary({dishes}) {
+function Summary({dishes, brand_uuid}) {
     const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
 
@@ -71,7 +73,6 @@ function Summary({dishes}) {
         });
     };
 
-
     useEffect(() => {
 
     })
@@ -80,26 +81,27 @@ function Summary({dishes}) {
         // Let the button load.
         setOrderPlaced(true);
 
-        let orders = [];
+        let orders = {"dishes": [], "brand_uuid": getBrand()};
         data.map((order) => {
-            orders.push({
+            orders.dishes.push({
                 dish_uuid: order.uuid,
                 quantity: order.qty,
             })
         })
 
-        await fetch("http://localhost:8000/api/order", {
+        await axios.post("http://localhost:8000/api/order", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(orders)
         })
-        .then(res => res)
+        .then(r => r.json().then(data => ({status: r.status, body: data})))
         .then(
           (result) => {
             if(result.status === 201) {
-                OrderPlacedSuccess("success", result.statusText)
+                OrderPlacedSuccess("success", result.body.msg)
+                localStorage.setItem("collection_code", result.body.collection_code)
                 setOrderPlaced(false)
                 dispatch(reset())
             } else {
@@ -107,6 +109,11 @@ function Summary({dishes}) {
                 setOrderPlaced(false)
             }
           },
+          (error) => {
+            console.log(error)
+            OrderPlacedSuccess("error", "Error placing order. Try again.")
+            setOrderPlaced(false)
+          }
         )
     }
 

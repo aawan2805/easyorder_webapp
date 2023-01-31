@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
+
 import { Col, Row, Card, Button, FloatButton, message } from 'antd';
 import { PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import {connect} from 'react-redux';
-
-import { useSelector, useDispatch } from 'react-redux'
-import { addOne, reset } from './store/actions/order.actions'
-
-import { save } from "./orderSlice";
 import { Layout, Menu } from 'antd';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
+
+import {connect} from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux'
+import { addOne, reset } from './store/actions/order.actions'
+import { save } from "./orderSlice";
+
 
 import { useNavigate } from "react-router-dom";
 
 import axios from 'axios';
+
+import {getBrand} from './helper.js';
 
 
 const { Meta } = Card;
@@ -40,10 +43,8 @@ function App({dishes}) {
   // const { dishes } = useSelector(state=>state)
 
   // Retrieve the dishes associated to the category
-  const retrieveDishesByCategoryUuid = async (category_uuid) => {
-    await axios.get(`http://localhost:8000/api/dishes/e46ba39f-6227-48d4-9380-f941727a643f/${category_uuid}`, {
-      withCredentials: true
-    })
+  const retrieveDishesByCategoryUuid = async (category_uuid, brand_uuid) => {
+    await axios.get(`http://localhost:8000/api/dishes/${brand_uuid}/${category_uuid}`)
     .then(res => res.data)
     .then(
       (result) => {
@@ -58,15 +59,16 @@ function App({dishes}) {
 
   useEffect(() => {
     // Fetch the categories first.
-    axios.get("http://localhost:8000/api/category/e46ba39f-6227-48d4-9380-f941727a643f", {
-      withCredentials: true
-    })
+    localStorage.setItem("brand_uuid", "e46ba39f-6227-48d4-9380-f941727a643f"); // Comment out this line later. 
+    let brand_uuid = getBrand();
+
+    axios.get(`http://localhost:8000/api/category/${brand_uuid}`)
       .then(res => res.data)
       .then(
         (result) => {
           setMenu(result)
           if(result.length > 0){
-            retrieveDishesByCategoryUuid(result[0].key)
+            retrieveDishesByCategoryUuid(result[0].key, brand_uuid)
           }
         },
         (error) => {
