@@ -43,8 +43,10 @@ function App({dishes}) {
   // const { dishes } = useSelector(state=>state)
 
   // Retrieve the dishes associated to the category
-  const retrieveDishesByCategoryUuid = async (category_uuid, brand_uuid) => {
-    await axios.get(`http://localhost:8000/api/dishes/${brand_uuid}/${category_uuid}`)
+  const retrieveDishesByCategoryUuid = async (category_uuid) => {
+    let brandUuid = getBrand();
+
+    await axios.get(`http://localhost:8000/api/dishes/${brandUuid}/${category_uuid}`)
     .then(res => res.data)
     .then(
       (result) => {
@@ -60,15 +62,16 @@ function App({dishes}) {
   useEffect(() => {
     // Fetch the categories first.
     localStorage.setItem("brand_uuid", "e46ba39f-6227-48d4-9380-f941727a643f"); // Comment out this line later. 
-    let brand_uuid = getBrand();
-
-    axios.get(`http://localhost:8000/api/category/${brand_uuid}`)
+    
+    let brandUuid = getBrand();
+    axios.get(`http://localhost:8000/api/category/${brandUuid}`)
       .then(res => res.data)
       .then(
         (result) => {
+          console.log(result)
           setMenu(result)
           if(result.length > 0){
-            retrieveDishesByCategoryUuid(result[0].key, brand_uuid)
+            retrieveDishesByCategoryUuid(result[0].key)
           }
         },
         (error) => {
