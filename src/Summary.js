@@ -96,25 +96,18 @@ function Summary({dishes, brand_uuid}) {
             },
             body: JSON.stringify(orders)
         })
-        .then(r => r.json().then(data => ({status: r.status, body: data})))
-        .then(
-          (result) => {
-            if(result.status === 201) {
-                OrderPlacedSuccess("success", result.body.msg)
-                localStorage.setItem("collection_code", result.body.collection_code)
+        .then(response => {
+            if(response.status === 201){
+                OrderPlacedSuccess("success", response.data.msg)
+                localStorage.setItem("collection_code", response.data.collection_code)
                 setOrderPlaced(false)
                 dispatch(reset())
             } else {
+                console.log(response)
                 OrderPlacedSuccess("error", "Error placing order. Try again.")
                 setOrderPlaced(false)
             }
-          },
-          (error) => {
-            console.log(error)
-            OrderPlacedSuccess("error", "Error placing order. Try again.")
-            setOrderPlaced(false)
-          }
-        )
+        })
     }
 
   // const { dishes } = useSelector(state=>state)
