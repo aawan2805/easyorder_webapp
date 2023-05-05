@@ -17,6 +17,7 @@ import axios from 'axios';
 
 import {getBrand} from './helper.js';
 
+import { API_URL } from './helper.js';
 
 const { Meta } = Card;
 const { Content, Sider } = Layout;
@@ -46,7 +47,7 @@ function App({dishes}) {
   const retrieveDishesByCategoryUuid = async (category_uuid) => {
     let brandUuid = getBrand();
 
-    await axios.get(`http://localhost:8000/api/dishes/${brandUuid}/${category_uuid}`)
+    await axios.get(`${API_URL}/dishes/${brandUuid}/${category_uuid}`)
     .then(res => res.data)
     .then(
       (result) => {
@@ -60,11 +61,16 @@ function App({dishes}) {
 
 
   useEffect(() => {
+    if (getBrand() === null || getBrand() === undefined){
+      console.log("Brand not found.")
+      navigate("/");
+    } else {
+      console.log("Brand found.")
+    }
     // Fetch the categories first.
-    localStorage.setItem("brand_uuid", "e46ba39f-6227-48d4-9380-f941727a643f"); // Comment out this line later. 
     
     let brandUuid = getBrand();
-    axios.get(`http://localhost:8000/api/category/${brandUuid}`)
+    axios.get(`${API_URL}/category/${brandUuid}`)
       .then(res => res.data)
       .then(
         (result) => {
@@ -106,13 +112,13 @@ function App({dishes}) {
               <div>
                 <Row>
                   {items.map(item => (
-                    <Col span={6} key={item.uuid}>
+                    <Col key={item.uuid}>
                       <Card
                         hoverable
                         style={{ width: 240 }}
                         cover={<img alt="example" src={item.photo} height={200} width={150} />}
                         >
-                          <Meta title={item.name + item.price + "€"} description={item.description} />
+                          <Meta title={item.name + " | " + item.price + "€"} description={item.description} />
                           <div>
                             <Button
                             type="primary" 

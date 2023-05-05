@@ -2,7 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import Scan from './Scan'
 import Summary from './Summary';
+import SummaryStatus from './SummaryStatus';
 import reportWebVitals from './reportWebVitals';
 import {
   createBrowserRouter,
@@ -22,11 +24,19 @@ const store = configureStore({
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Scan />,
+  },
+  {
+    path: "/home",
+    element: <App />
   },
   {
     path: "/summary",
     element: <Summary />,
+  },
+  {
+    path: "/orderStatus",
+    element: <SummaryStatus />
   }
 ]);
 

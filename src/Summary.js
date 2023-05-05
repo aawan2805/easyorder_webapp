@@ -1,4 +1,3 @@
-import {getBrand} from './helper.js';
 import React, { useState, useEffect } from 'react';
 import { Col, Row, Card, Button, FloatButton, message } from 'antd';
 import { PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
@@ -13,7 +12,7 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined, ArrowLeftOutlined }
 import { Space, Table, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-
+import { API_URL, getBrand, getCollectionCode } from './helper.js';
 
 const { Meta } = Card;
 const { Content, Sider } = Layout;
@@ -74,7 +73,9 @@ function Summary({dishes, brand_uuid}) {
     };
 
     useEffect(() => {
-
+        if(getCollectionCode() === null || getCollectionCode() === undefined) {
+            navigate("/")
+        }
     })
 
     const placeOrder = async () => {
@@ -89,7 +90,7 @@ function Summary({dishes, brand_uuid}) {
             })
         })
 
-        await axios.post("http://localhost:8000/api/order", {
+        await axios.post(`${API_URL}/order`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
