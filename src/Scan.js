@@ -28,7 +28,6 @@ const Scan = () => {
     };
 
     useEffect(() => {
-      displayError()
       if(getCollectionCode() !== null && getCollectionCode() !== undefined) {
         checkCollectionCodeStatus(getCollectionCode());
       }
@@ -40,7 +39,6 @@ const Scan = () => {
         .then(
           (result) => {
             if(result.remove_token === false){
-              console.log(result)
               navigate("/orderStatus");
             } else {
               // Remove token from localStorage
