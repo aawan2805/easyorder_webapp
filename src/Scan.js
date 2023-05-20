@@ -13,6 +13,7 @@ const Scan = () => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
     const [errorShowing, setErrorShowing] = useState(false);
+    const [axiosMessage, setAxiosMessage] = useState(null);
 
     const displayError = (type, message) => {
       if(!errorShowing) {
@@ -28,6 +29,7 @@ const Scan = () => {
     };
 
     useEffect(() => {
+      console.log(getCollectionCode())
       if(getCollectionCode() !== null && getCollectionCode() !== undefined) {
         checkCollectionCodeStatus(getCollectionCode());
       }
@@ -53,6 +55,10 @@ const Scan = () => {
 
     const newScan = async (qr) => {
       // Check if the code is valid.
+      const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      }
       await axios.get(`${API_URL}/check-qr/${qr}`)
       .then(res => res.data)
       .then(
@@ -66,6 +72,8 @@ const Scan = () => {
           }
         },
         (error) => {
+          setAxiosMessage(error)
+          console.log(error)
           displayError("error", "Not a valid QR.");
         }
       )
@@ -88,7 +96,10 @@ const Scan = () => {
                 style={{ width: '100%' }}
                 key="environment"
                 onDecode={(result) => newScan(result)}
-                onError={(err) => displayError("error", "Error occured, please try again.")}
+                onError={(err) => {
+                  console.log(err);
+                  displayError("error", "Error occured, please try again.")
+                }}
                 />
           </Col>
         </Row>

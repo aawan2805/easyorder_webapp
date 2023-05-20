@@ -4,7 +4,7 @@ import { PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import {connect} from 'react-redux';
 
 import { useSelector, useDispatch } from 'react-redux'
-import { addOne, reset } from './store/actions/order.actions'
+import { addOne, reset, substituteDish } from './store/actions/order.actions'
 
 import { save } from "./orderSlice";
 import { Layout, Menu } from 'antd';
@@ -20,6 +20,8 @@ const { Content, Sider } = Layout;
 
 
 function Summary({dishes, brand_uuid}) {
+    const { CheckableTag } = Tag;
+
     const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
 
@@ -29,7 +31,21 @@ function Summary({dishes, brand_uuid}) {
     const dispatch = useDispatch();
     const state = useSelector(state => state)
 
-    const data = state.dishes;
+    const [dataState, setDataState] = useState(state.dishes);
+
+    const changeExcludeIngredient = (uuid, ing, checked) => {
+        dataState.forEach(function(dish) {
+          if(dish.randomUuid === uuid) {
+            dish.ingredients.forEach(function(ingredient) {
+              if(ingredient.name === ing.name) {
+                ingredient.exclude = !ingredient.exclude
+              }
+            });
+          }
+        });
+        return dataState;
+    };
+
     const columns = [
         {
             title: 'Name',
@@ -45,18 +61,30 @@ function Summary({dishes, brand_uuid}) {
             title: 'Ingredients',
             dataIndex: 'ingredients',
             key: 'ingredients',
-        },
-        {
-            title: 'Tags',
-            dataIndex: 'tags',
-            key: 'tags',
-        },
-        {
-            title: 'Quantity',
-            dataIndex: 'qty',
-            key: 'qty',
-        },
+            render: (_, { ingredients, randomUuid }) => (
+              <>
+                {ingredients.map((ing) => {
+                  return (
+                    <CheckableTag
+                     color={"green"}
+                     key={`${randomUuid}${ing.name}`}
+                     checked={!ing.exclude}
+                     onChange={(checked) => {
+                       const newData = changeExcludeIngredient(randomUuid, ing, checked)
+                       // console.log(newData);
+                       dispatch(substituteDish(newData));
+                       setDataState(newData);
+                     }}>
+                      {ing.name}
+                    </CheckableTag>
+                  );
+                })}
+              </>
+            ),
+        }
     ]
+
+    const [selectedTags, setSelectedTags] = useState([]);
 
     const dishRemovedFromStore = (dishName, dishUuid) => {
         messageApi.open({
@@ -72,66 +100,71 @@ function Summary({dishes, brand_uuid}) {
         });
     };
 
+
     useEffect(() => {
-        if(getCollectionCode() === null || getCollectionCode() === undefined) {
-            navigate("/")
-        }
-    })
+      console.log("*******#*******")
+      console.log(dataState)
+      console.log("*******#*******")
+    }, [dispatch, dataState])
+
 
     const placeOrder = async () => {
         // Let the button load.
         setOrderPlaced(true);
 
         let orders = {"dishes": [], "brand_uuid": getBrand()};
-        data.map((order) => {
+        dataState.map((dish) => {
             orders.dishes.push({
-                dish_uuid: order.uuid,
-                quantity: order.qty,
+                dish_uuid: dish.uuid,
+                exclude_ingredients: dish.ingredients,
+                quantity: 1,
             })
         })
 
-        await axios.post(`${API_URL}/order`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(orders)
-        })
-        .then(response => {
-            if(response.status === 201){
-                OrderPlacedSuccess("success", response.data.msg)
-                localStorage.setItem("collection_code", response.data.collection_code)
-                setOrderPlaced(false)
-                dispatch(reset())
-            } else {
-                console.log(response)
-                OrderPlacedSuccess("error", "Error placing order. Try again.")
-                setOrderPlaced(false)
-            }
-        })
+        console.log(orders)
+
+        try {
+            const collection_code = getCollectionCode();
+            const response = await axios.post(`${API_URL}/order`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orders)
+            })
+            console.log(response.data)
+            OrderPlacedSuccess("success", response.data.msg)
+            localStorage.setItem("collection_code", response.data.collection_code)
+            setOrderPlaced(false)
+            dispatch(reset())
+            navigate("/orderStatus")
+        } catch (error) {
+          OrderPlacedSuccess("error", "Error placing order. Try again.")
+          setOrderPlaced(false)
+        }
     }
 
   // const { dishes } = useSelector(state=>state)
     return (
         <>
             {contextHolder}
-            <Table dataSource={data} columns={columns} />
+            <Table dataSource={dataState} columns={columns} rowKeY="uuid" />
             <div style={{
                 textAlign: "center"
             }}>
-                <Button 
+                <Button
                  type="primary"
-                 disabled={data.length > 0 ? false : true}
+                 disabled={dataState.length > 0 ? false : true}
                  onClick={() => placeOrder()}
                  loading={orderPlacing === true ? true : false}
                 >
                     Realizar pedido
                 </Button>
             </div>
-            {orderPlacing === true ? 
-                null 
-                : 
-                <FloatButton onClick={() => navigate("/")}  icon={<ArrowLeftOutlined />} />
+            {orderPlacing === true ?
+                null
+                :
+                <FloatButton onClick={() => navigate("/home")}  icon={<ArrowLeftOutlined />} />
             }
         </>
     );

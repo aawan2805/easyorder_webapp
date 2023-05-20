@@ -61,14 +61,12 @@ function App({dishes}) {
 
 
   useEffect(() => {
-    if (getBrand() === null || getBrand() === undefined){
+    if (getBrand() === null && getBrand() === undefined){
       console.log("Brand not found.")
       navigate("/");
-    } else {
-      console.log("Brand found.")
     }
     // Fetch the categories first.
-    
+
     let brandUuid = getBrand();
     axios.get(`${API_URL}/category/${brandUuid}`)
       .then(res => res.data)
@@ -121,8 +119,8 @@ function App({dishes}) {
                           <Meta title={item.name + " | " + item.price + "€"} description={item.description} />
                           <div>
                             <Button
-                            type="primary" 
-                            icon={<PlusOutlined />} 
+                            type="primary"
+                            icon={<PlusOutlined />}
                             size={10}
                             onClick={ () => {
                               dispatch(addOne(item));
@@ -130,12 +128,12 @@ function App({dishes}) {
                             }}
                             />
                           </div>
-                          
+
                       </Card>
                     </Col>
                   ))}
                 </Row>
-                <FloatButton 
+                <FloatButton
                   icon={<ShoppingCartOutlined />}
                   description={state.total_dishes}
                   type="primary"
@@ -166,4 +164,3 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(mapStateToProps, mapDispatchToProps)(App);
 
 // export default App;
-

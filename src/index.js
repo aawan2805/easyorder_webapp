@@ -19,8 +19,6 @@ const store = configureStore({
   reducer: orderSlice
 });
 
-
-
 const router = createBrowserRouter([
   {
     path: "/",
