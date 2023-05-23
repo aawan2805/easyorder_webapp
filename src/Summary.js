@@ -4,23 +4,23 @@ import { PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import {connect} from 'react-redux';
 
 import { useSelector, useDispatch } from 'react-redux'
-import { addOne, reset, substituteDish } from './store/actions/order.actions'
+import { addOne, reset, substituteDish, deleteFromCart, incrementQuantity, decrementQuantity } from './store/actions/order.actions'
 
 import { save } from "./orderSlice";
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Typography } from 'antd';
 import { LaptopOutlined, NotificationOutlined, UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Space, Table, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { API_URL, getBrand, getCollectionCode } from './helper.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const { Meta } = Card;
 const { Content, Sider } = Layout;
 
-
-
 function Summary({dishes, brand_uuid}) {
     const { CheckableTag } = Tag;
+    const { Title, Text } = Typography;
 
     const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
@@ -31,10 +31,8 @@ function Summary({dishes, brand_uuid}) {
     const dispatch = useDispatch();
     const state = useSelector(state => state)
 
-    const [dataState, setDataState] = useState(state.dishes);
-
     const changeExcludeIngredient = (uuid, ing, checked) => {
-        dataState.forEach(function(dish) {
+        state.dishes.forEach(function(dish) {
           if(dish.randomUuid === uuid) {
             dish.ingredients.forEach(function(ingredient) {
               if(ingredient.name === ing.name) {
@@ -43,7 +41,7 @@ function Summary({dishes, brand_uuid}) {
             });
           }
         });
-        return dataState;
+        return state.dishes;
     };
 
     const columns = [
@@ -51,11 +49,6 @@ function Summary({dishes, brand_uuid}) {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
-        },
-        {
-            title: 'Price',
-            dataIndex: 'price',
-            key: 'price',
         },
         {
             title: 'Ingredients',
@@ -73,7 +66,6 @@ function Summary({dishes, brand_uuid}) {
                        const newData = changeExcludeIngredient(randomUuid, ing, checked)
                        // console.log(newData);
                        dispatch(substituteDish(newData));
-                       setDataState(newData);
                      }}>
                       {ing.name}
                     </CheckableTag>
@@ -81,7 +73,34 @@ function Summary({dishes, brand_uuid}) {
                 })}
               </>
             ),
-        }
+        },
+        {
+            title: 'Price',
+            dataIndex: 'price',
+            key: 'price',
+        },
+        {
+            title: '#',
+            dataIndex: 'quantity',
+            key: 'quantity',
+        },
+        {
+          title: '',
+          key: 'action',
+          render: (obj) => (
+            <>
+              <Button danger onClick={() => dispatch(incrementQuantity(obj))}>+</Button>
+
+              <Button danger onClick={() => {
+                if(obj.quantity <= 1) {
+                  dispatch(deleteFromCart(obj));
+                } else {
+                  dispatch(decrementQuantity(obj));
+                }
+              }}>-</Button>
+            </>
+          ),
+        },
     ]
 
     const [selectedTags, setSelectedTags] = useState([]);
@@ -89,7 +108,7 @@ function Summary({dishes, brand_uuid}) {
     const dishRemovedFromStore = (dishName, dishUuid) => {
         messageApi.open({
             type: 'success',
-            content: `${dishName} eliminado de la cesta.`,
+            content: `${dishName} removed from cart.`,
         });
     };
 
@@ -102,10 +121,10 @@ function Summary({dishes, brand_uuid}) {
 
 
     useEffect(() => {
-      console.log("*******#*******")
-      console.log(dataState)
-      console.log("*******#*******")
-    }, [dispatch, dataState])
+      if(getCollectionCode() !== null && getCollectionCode !== undefined) {
+        navigate("/orderStatus")
+      }
+    }, [])
 
 
     const placeOrder = async () => {
@@ -113,7 +132,7 @@ function Summary({dishes, brand_uuid}) {
         setOrderPlaced(true);
 
         let orders = {"dishes": [], "brand_uuid": getBrand()};
-        dataState.map((dish) => {
+        state.dishes.map((dish) => {
             orders.dishes.push({
                 dish_uuid: dish.uuid,
                 exclude_ingredients: dish.ingredients,
@@ -144,22 +163,29 @@ function Summary({dishes, brand_uuid}) {
         }
     }
 
-  // const { dishes } = useSelector(state=>state)
     return (
         <>
             {contextHolder}
-            <Table dataSource={dataState} columns={columns} rowKeY="uuid" />
+            <Table dataSource={state.dishes} columns={columns} rowKeY={uuidv4()} />
             <div style={{
                 textAlign: "center"
             }}>
+            <>
+                <Title level={5}>
+                  Your total is {state.dishes.reduce((total, current) => {
+                    return total + (current.quantity * current.price);
+                  }, 0)}€
+                </Title>
                 <Button
                  type="primary"
-                 disabled={dataState.length > 0 ? false : true}
+                 disabled={state.dishes.length > 0 ? false : true}
                  onClick={() => placeOrder()}
                  loading={orderPlacing === true ? true : false}
                 >
-                    Realizar pedido
+                    Place order
                 </Button>
+
+            </>
             </div>
             {orderPlacing === true ?
                 null
@@ -182,7 +208,6 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        getDishes: () => { dispatch() }
     }
 }
 

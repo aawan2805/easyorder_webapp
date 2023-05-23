@@ -13,7 +13,7 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined, ArrowLeftOutlined }
 import { Space, Table, Tag, Divider } from 'antd';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { API_URL, getBrand, getCollectionCode } from './helper.js';
+import { API_URL, getBrand, getCollectionCode, removeBrand, removeCollectionCode } from './helper.js';
 import { SmileOutlined } from '@ant-design/icons';
 import { Result, Typography } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
@@ -36,17 +36,31 @@ function SummaryStatus({dishes, brand_uuid}) {
     const state = useSelector(state => state)
     const { Paragraph, Text } = Typography;
 
-
     useEffect(() => {
         if(getCollectionCode() === null || getCollectionCode() === undefined) {
             navigate("/")
         }
-        updateOrderStatus();
         if(getCollectionCode() !== null && getCollectionCode() !== undefined) {
             connect_to_ws(getCollectionCode());
+            checkOrderStatus();
+            updateOrderStatus();
         }
-        console.log(order)
     }, [order.order_status])
+
+    const checkOrderStatus = async () => {
+      try {
+        const collection_code = getCollectionCode();
+        const response = await axios.get(`${API_URL}/check-order-status/${collection_code}`);
+        if(response.data.remove_token === true) {
+          console.log("DELETING TOKEN...")
+          removeCollectionCode();
+          removeBrand();
+          navigate("/")
+        }
+      } catch(e) {
+        console.log(e)
+      }
+    }
 
     const connect_to_ws = (collection_code) => {
         const chatSocket = new WebSocket(`wss://rocket-order.com/orders/client/${collection_code}`);
@@ -64,7 +78,7 @@ function SummaryStatus({dishes, brand_uuid}) {
         chatSocket.onmessage = function(e) {
           try {
             let data = JSON.parse(e.data)
-            if(data.status === '3' || data.status === 3 || data.status === '0' || data.status === 0) {
+            if(data.status === '3' || data.status === 3 || data.status === '0' || data.status === 0 || data.status === '4' || data.status === 4) {
               setOrder(prev => ({
                 ...prev,
                 order_status: Number(data.status)
@@ -92,6 +106,7 @@ function SummaryStatus({dishes, brand_uuid}) {
         } catch (error) {
             setApiFetchError(true)
         }
+
         setLoadingData(false);
     }
 
@@ -150,20 +165,15 @@ function SummaryStatus({dishes, brand_uuid}) {
                               >
                                   <div className="desc">
                                       {order.dishes.map(dish => (
-                                            <Descriptions title={dish.dish__name} key={uuidv4()}>
+                                            <Descriptions title={`${dish.dish__name} | ${dish.dish__price}`} key={uuidv4()}>
                                               <Descriptions.Item label="" key={uuidv4()}>
                                                 {dish.exclude_ingredients.map(ing => (
                                                   <>
-                                                  <CloseCircleOutlined style={{ color: 'red' }} className="site-result-demo-error-icon" key={uuidv4()} /> {ing}
+                                                  <CloseCircleOutlined key={uuidv4()} style={{ color: 'red' }} className="site-result-demo-error-icon" key={uuidv4()} /> {ing}
                                                   </>
                                                 ))}
                                               </Descriptions.Item>
                                             </Descriptions>
-
-
-                                              // <Paragraph key={uuidv4()}>
-                                              //     <CheckCircleOutlined className="site-result-demo-error-icon" /> {dish.dish__name} | {dish.dish__price}€
-                                              // </Paragraph>
                                       ))}
                                   </div>
                               </Result>
@@ -183,7 +193,7 @@ function SummaryStatus({dishes, brand_uuid}) {
                                             <Descriptions.Item label="" key={uuidv4()}>
                                               {dish.exclude_ingredients.map(ing => (
                                                 <>
-                                                <CloseCircleOutlined style={{ color: 'red' }} className="site-result-demo-error-icon" key={uuidv4()} /> {ing}
+                                                <CloseCircleOutlined key={uuidv4()} style={{ color: 'red' }} className="site-result-demo-error-icon" key={uuidv4()} /> {ing}
                                                 </>
                                               ))}
                                             </Descriptions.Item>

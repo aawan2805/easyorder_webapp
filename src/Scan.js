@@ -9,7 +9,7 @@ import { Alert, Space, Col, Row, message } from 'antd';
 const Scan = () => {
     // Check if there is a collection code already in localStorage
       // If not, check if qr is valid against the API and store the qr to localStorage
-    
+
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
     const [errorShowing, setErrorShowing] = useState(false);
@@ -36,6 +36,7 @@ const Scan = () => {
     }, [])
 
     const checkCollectionCodeStatus = async (collection_code) => {
+      try {
         await axios.get(`${API_URL}/check-order-status/${collection_code}`)
         .then(res => res.data)
         .then(
@@ -51,6 +52,9 @@ const Scan = () => {
             console.log(error);
           }
         )
+      } catch (e) {
+        displayError("error", "An error occured. Try again later.");
+      }
     }
 
     const newScan = async (qr) => {
@@ -59,24 +63,28 @@ const Scan = () => {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json',
       }
-      await axios.get(`${API_URL}/check-qr/${qr}`)
-      .then(res => res.data)
-      .then(
-        (result) => {
-          if(result.qr_ok === true) {
-            // Store the qr code in localStorage
-            localStorage.setItem("brand_uuid", qr)
-            navigate("/home");
-          } else {
-            displayError("error", "Qr is invalid.");
+      try {
+        await axios.get(`${API_URL}/check-qr/${qr}`)
+        .then(res => res.data)
+        .then(
+          (result) => {
+            if(result.qr_ok === true) {
+              // Store the qr code in localStorage
+              localStorage.setItem("brand_uuid", qr)
+              navigate("/home");
+            } else {
+              displayError("error", "Qr is invalid.");
+            }
+          },
+          (error) => {
+            setAxiosMessage(error)
+            console.log(error)
+            displayError("error", "Not a valid QR.");
           }
-        },
-        (error) => {
-          setAxiosMessage(error)
-          console.log(error)
-          displayError("error", "Not a valid QR.");
-        }
-      )
+        )
+      } catch(e) {
+        displayError("error", "An error occured. Try again later.");
+      }
     }
 
     return (
