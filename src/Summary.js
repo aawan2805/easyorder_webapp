@@ -49,6 +49,9 @@ function Summary({dishes, brand_uuid}) {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            render: (_, {name, quantity}) => {
+              return `${quantity}x ${name}`;
+            }
         },
         {
             title: 'Ingredients',
@@ -80,17 +83,11 @@ function Summary({dishes, brand_uuid}) {
             key: 'price',
         },
         {
-            title: '#',
-            dataIndex: 'quantity',
-            key: 'quantity',
-        },
-        {
           title: '',
           key: 'action',
           render: (obj) => (
             <>
-              <Button danger onClick={() => dispatch(incrementQuantity(obj))}>+</Button>
-
+              <Button primary onClick={() => dispatch(incrementQuantity(obj))}>+</Button>
               <Button danger onClick={() => {
                 if(obj.quantity <= 1) {
                   dispatch(deleteFromCart(obj));
@@ -136,7 +133,7 @@ function Summary({dishes, brand_uuid}) {
             orders.dishes.push({
                 dish_uuid: dish.uuid,
                 exclude_ingredients: dish.ingredients,
-                quantity: 1,
+                quantity: dish.quantity,
             })
         })
 
