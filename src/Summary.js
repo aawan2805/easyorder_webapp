@@ -91,6 +91,7 @@ function Summary({dishes, brand_uuid}) {
               <Button danger onClick={() => {
                 if(obj.quantity <= 1) {
                   dispatch(deleteFromCart(obj));
+                  dishRemovedFromStore(obj.name)
                 } else {
                   dispatch(decrementQuantity(obj));
                 }
@@ -106,6 +107,7 @@ function Summary({dishes, brand_uuid}) {
         messageApi.open({
             type: 'success',
             content: `${dishName} removed from cart.`,
+            duration: 0.5,
         });
     };
 

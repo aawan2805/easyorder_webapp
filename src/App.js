@@ -40,7 +40,7 @@ function App({dishes}) {
       key: uuidv4(),
       type: 'success',
       content: `${dishName} añadido a la cesta.`,
-      duration: 1,
+      duration: 0.5,
     });
   };
 
@@ -49,7 +49,7 @@ function App({dishes}) {
       key: uuidv4(),
       type: 'error',
       content: `msg`,
-      duration: 1,
+      duration: 0.5,
     });
   };
 
