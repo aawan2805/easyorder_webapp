@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Col, Row, Card, Button, FloatButton, message, Spin, Alert } from 'antd';
-import { PlusOutlined, ShoppingCartOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { PlusOutlined, ShoppingCartOutlined, CloseCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import {connect} from 'react-redux';
 
 import { useSelector, useDispatch } from 'react-redux'
@@ -158,14 +158,14 @@ function SummaryStatus({dishes, brand_uuid}) {
                             <div>
                               <Result
                                   key={uuidv4()}
-                                  status="success"
-                                  title="Preparing order."
-                                  subTitle={`Successfully placed the order and payed. Collectiin number is ${getCollectionCode()}`}
+                                  icon={<LoadingOutlined />}
+                                  title={`Preparing order ${getCollectionCode()}.`}
+                                  subTitle={`Successfully placed the order and payed. Collection number is ${getCollectionCode()}.`}
                                   extra={[]}
                               >
                                   <div className="desc">
                                       {order.dishes.map(dish => (
-                                            <Descriptions title={`${dish.dish__name} | ${dish.dish__price}`} key={uuidv4()}>
+                                            <Descriptions title={`${dish.quantity}x ${dish.dish__name} | ${dish.dish__price}€`} key={uuidv4()}>
                                               <Descriptions.Item label="" key={uuidv4()}>
                                                 {dish.exclude_ingredients.map(ing => (
                                                   <>
@@ -175,6 +175,10 @@ function SummaryStatus({dishes, brand_uuid}) {
                                               </Descriptions.Item>
                                             </Descriptions>
                                       ))}
+                                  </div>
+                                  <Divider plain />
+                                  <div className="desc">
+                                    Your total was <strong>{order.total_amount}€</strong>
                                   </div>
                               </Result>
                             </div>
@@ -199,6 +203,10 @@ function SummaryStatus({dishes, brand_uuid}) {
                                             </Descriptions.Item>
                                           </Descriptions>
                                     ))}
+                                </div>
+                                <Divider plain />
+                                <div className="desc">
+                                  Your total was <strong>{order.total_amount}€</strong>
                                 </div>
                             </Result>
                           </div>
