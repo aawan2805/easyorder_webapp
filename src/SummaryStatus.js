@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Col, Row, Card, Button, FloatButton, message, Spin, Alert } from 'antd';
+import { Col, Row, Card, Button, FloatButton, message, Spin, Alert, Drawer } from 'antd';
 import { PlusOutlined, ShoppingCartOutlined, CloseCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import {connect} from 'react-redux';
 
@@ -47,6 +47,8 @@ function SummaryStatus({dishes, brand_uuid}) {
         }
     }, [order.order_status])
 
+    const refresh = () => window.location.reload(true)
+
     const checkOrderStatus = async () => {
       try {
         const collection_code = getCollectionCode();
@@ -72,6 +74,7 @@ function SummaryStatus({dishes, brand_uuid}) {
 
         chatSocket.onclose = function(e) {
             // Refresh page.
+            setWSError(true);
             console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
         };
 
@@ -134,13 +137,13 @@ function SummaryStatus({dishes, brand_uuid}) {
             {contextHolder}
             {apiFetchError === true
                 ?
-                    <Alert message="We couldn't retrieve the order's data. Try again refreshing the page." type="error" showIcon closable />
-                :
+                    <Alert message={`We couldn't retrieve the order's data. Please REFRESH the page.`} type="error" showIcon closable />
+                 :
                 null
             }
             {WSError === true
                 ?
-                    <Alert message="You won't recieve live notifications. Please try refreshing the page." type="warning" showIcon closable />
+                    <Alert message={`You won't recieve live notifications. Please REFRESH the page`} type="warning" showIcon closable />
                 :
                     <Alert message="All set up for notifications." type="success" showIcon closable />
             }

@@ -14,6 +14,7 @@ const Scan = () => {
     const [messageApi, contextHolder] = message.useMessage();
     const [errorShowing, setErrorShowing] = useState(false);
     const [axiosMessage, setAxiosMessage] = useState(null);
+    const [canScan, setCanScan] = useState(true); // Add canScan state variable
 
     const displayError = (type, message) => {
       if(!errorShowing) {
@@ -36,7 +37,6 @@ const Scan = () => {
     }, [])
 
     const checkCollectionCodeStatus = async (collection_code) => {
-      try {
         await axios.get(`${API_URL}/check-order-status/${collection_code}`)
         .then(res => res.data)
         .then(
@@ -52,39 +52,44 @@ const Scan = () => {
             console.log(error);
           }
         )
-      } catch (e) {
-        displayError("error", "An error occured. Try again later.");
-      }
     }
 
     const newScan = async (qr) => {
+      if (!canScan) return; // Check if scanning is allowed
+      setCanScan(false); // Prevent scanning while processing
+
       // Check if the code is valid.
       const headers = {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json',
       }
-      try {
-        await axios.get(`${API_URL}/check-qr/${qr}`)
-        .then(res => res.data)
-        .then(
-          (result) => {
-            if(result.qr_ok === true) {
-              // Store the qr code in localStorage
-              localStorage.setItem("brand_uuid", qr)
-              navigate("/home");
-            } else {
-              displayError("error", "Qr is invalid.");
-            }
-          },
-          (error) => {
-            setAxiosMessage(error)
-            console.log(error)
-            displayError("error", "Not a valid QR.");
+      await axios.get(`${API_URL}/check-qr/${qr}`)
+      .then(res => res.data)
+      .then(
+        (result) => {
+          if(result.qr_ok === true) {
+            // Store the qr code in localStorage
+            localStorage.setItem("brand_uuid", qr)
+            navigate("/home");
+          } else {
+            displayError("error", "Qr is invalid.");
+            setTimeout(() => {
+              setCanScan(true); // Allow scanning after a delay (e.g., 3 seconds)
+            }, 3000);
+
           }
-        )
-      } catch(e) {
-        displayError("error", "An error occured. Try again later.");
-      }
+        },
+        (error) => {
+          setAxiosMessage(error)
+          console.log(error)
+          displayError("error", "Not a valid QR.");
+
+          setTimeout(() => {
+            setCanScan(true); // Allow scanning after a delay (e.g., 3 seconds)
+          }, 3000);
+
+        }
+      )
     }
 
     return (

@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import React, { useState, useEffect } from 'react';
 
 import { Col, Row, Card, Button, FloatButton, message } from 'antd';
@@ -10,7 +12,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { addOne, reset } from './store/actions/order.actions'
 import { save } from "./orderSlice";
 
-
 import { useNavigate } from "react-router-dom";
 
 import axios from 'axios';
@@ -19,8 +20,6 @@ import {getBrand, API_URL, getCollectionCode} from './helper.js';
 
 const { Meta } = Card;
 const { Content, Sider } = Layout;
-import { v4 as uuidv4 } from 'uuid';
-
 
 function App({dishes}) {
   const navigate = useNavigate();
