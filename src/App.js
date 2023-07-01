@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 import React, { useState, useEffect } from 'react';
 
-import { Col, Row, Card, Button, FloatButton, message } from 'antd';
+import { Col, Row, Card, Button, FloatButton, message, Drawer, Tag } from 'antd';
 import { PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
-import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
+import { LaptopOutlined, NotificationOutlined, UserOutlined, InfoOutlined } from '@ant-design/icons';
 
 import {connect} from 'react-redux';
 import { useSelector, useDispatch } from 'react-redux'
@@ -28,6 +28,9 @@ function App({dishes}) {
 
   const [items, setItems] = useState([]);
   const [menu, setMenu] = useState([]);
+  const [openDrawer, setOpenDrawer] = useState(false)
+  const [selectedTags, setSelectedTags] = useState([])
+  const [selectedDishTitle, setSelectedDishTitle] = useState("");
 
   const dispatch = useDispatch();
   const state = useSelector(state => state)
@@ -43,12 +46,12 @@ function App({dishes}) {
     });
   };
 
-  const error = (msg) => {
+  const error = (msg, duration=0.5) => {
     messageApi.open({
       key: uuidv4(),
       type: 'error',
-      content: `msg`,
-      duration: 0.5,
+      content: `${msg}`,
+      duration: duration,
     });
   };
 
@@ -66,11 +69,13 @@ function App({dishes}) {
           setItems(result)
         },
         (error) => {
+          error("An error occured fetching dishes. Try again later.", 3)
           console.log(error)
         }
       )
     } catch(e) {
-      error("An error occured fetching dishes. Try again later.")
+      error("An error occured fetching dishes. Try again later.", 3)
+      console.log(e)
     }
   };
 
@@ -87,11 +92,13 @@ function App({dishes}) {
               setCurrent([result[0].key])
           },
           (error) => {
+            error("An error occured fetching categories. Try again later.", 3)
             console.log(error)
           }
       )
     } catch(e) {
-      error("An error occured fetching categories. Try again later.")
+      error("An error occured fetching categories. Try again later.", 3)
+      console.log(e)
     }
   }
 
@@ -105,6 +112,18 @@ function App({dishes}) {
     // Fetch the categories first.
     retrieveCategories();
   }, [])
+
+  const displayTags = (item) => {
+    console.log(item)
+    setOpenDrawer(true);
+    setSelectedTags(item.tags);
+    setSelectedDishTitle(item.name);
+  }
+
+  const closeDrawer = () => {
+    console.log("closing drawer...")
+    setOpenDrawer(false);
+  }
 
     return (
       <>
@@ -142,24 +161,39 @@ function App({dishes}) {
                         extra={item.price + "€"}
                         style={{ width: 240 }}
                         cover={<img alt="example" src={item.photo} height={200} width={150} />}
+
                         >
                           <Meta title={item.name} description={item.description} />
                           <div>
                             <Button
                             type="primary"
-                            icon={<PlusOutlined />}
+                            icon={<ShoppingCartOutlined />}
                             size={10}
                             onClick={ () => {
                               dispatch(addOne(item));
                               success(item.name);
                             }}
                             />
+                            <Button
+                            type="primary"
+                            icon={<InfoOutlined />}
+                            size={10}
+                            onClick={() => displayTags(item)}
+                            />
+
                           </div>
 
                       </Card>
                     </Col>
                   ))}
                 </Row>
+
+                <Drawer open={openDrawer} onClose={closeDrawer} title={selectedDishTitle} placement="bottom">
+                  {selectedTags.map(tag => {
+                    return (<Tag color="green" key={uuidv4()}>{tag}</Tag>)
+                  })}
+                </Drawer>
+
                 <FloatButton
                   icon={<ShoppingCartOutlined />}
                   description={state.total_dishes}
